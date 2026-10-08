@@ -1,58 +1,98 @@
 package com.example.myapplication.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+
+/**
+ * Dedicated color tokens container for the Calculator design system.
+ */
+@Immutable
+data class CalculatorColors(
+    val background: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val highEmphasis: Color,    // 0xFF4B5EFC - Math operators
+    val mediumEmphasis: Color,  // 0xFF4E505F - Function keys (C, +/-, %)
+    val lowEmphasis: Color,     // 0xFF2E2F38 - Number keys (0-9, ., ⌫)
+    val textOperator: Color = Color(0xFFFFFFFF),
+    val toggleTrack: Color,
+    val toggleThumb: Color
+)
+
+val DarkCalculatorColors = CalculatorColors(
+    background = ColorBackground,
+    textPrimary = ColorText,
+    textSecondary = ColorTextSecondaryDark,
+    highEmphasis = ColorHighEmphasis,
+    mediumEmphasis = ColorMediumEmphasis,
+    lowEmphasis = ColorLowEmphasis,
+    textOperator = ColorTextOperator,
+    toggleTrack = ColorLowEmphasis,
+    toggleThumb = ColorMediumEmphasis
+)
+
+val LightCalculatorColors = CalculatorColors(
+    background = LightColorBackground,
+    textPrimary = LightColorTextPrimary,
+    textSecondary = LightColorTextSecondary,
+    highEmphasis = LightColorHighEmphasis,
+    mediumEmphasis = LightColorMediumEmphasis,
+    lowEmphasis = LightColorLowEmphasis,
+    textOperator = ColorTextOperator,
+    toggleTrack = LightColorMediumEmphasis,
+    toggleThumb = Color(0xFFFFFFFF)
+)
+
+val LocalCalculatorColors = staticCompositionLocalOf { DarkCalculatorColors }
+
+object CalculatorTheme {
+    val colors: CalculatorColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalCalculatorColors.current
+}
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    background = ColorBackground,
+    surface = ColorLowEmphasis,
+    primary = ColorHighEmphasis,
+    secondary = ColorMediumEmphasis,
+    onBackground = ColorText,
+    onSurface = ColorText,
+    onPrimary = ColorTextOperator
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    background = LightColorBackground,
+    surface = LightColorLowEmphasis,
+    primary = LightColorHighEmphasis,
+    secondary = LightColorMediumEmphasis,
+    onBackground = LightColorTextPrimary,
+    onSurface = LightColorTextPrimary,
+    onPrimary = ColorTextOperator
 )
 
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val calculatorColors = if (darkTheme) DarkCalculatorColors else LightCalculatorColors
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    CompositionLocalProvider(LocalCalculatorColors provides calculatorColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
     }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
 }
